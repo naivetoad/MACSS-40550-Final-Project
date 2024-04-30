@@ -32,3 +32,12 @@ This model can be transferred to the original Schelling model by:
 
 ## Group members (Alphabetical order)
 Gregory Ho, Jiaxuan Zhang, Thomas Yan
+
+### Discussion Notes
+Questions for further contemplation - How do we differentiate houses and households on the grid?
+- One option is to only visualize houses. Because we are interested in gentrification, and segregation by housing quality
+- Another way is to embed Household attributes in housing.
+
+We are looking at segregation of houses (outcome of interest: gentrification), and segregation of households(outcome of interest: Income-based segregation).
+
+What we would like to see, are clusters of neighborhoods that are well-maintained or poorly maintained. (Process we want to simulate)

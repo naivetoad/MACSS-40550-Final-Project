@@ -41,3 +41,5 @@ Questions for further contemplation - How do we differentiate houses and househo
 We are looking at segregation of houses (outcome of interest: gentrification), and segregation of households(outcome of interest: Income-based segregation).
 
 What we would like to see, are clusters of neighborhoods that are well-maintained or poorly maintained. (Process we want to simulate)
+
+House prices should be primarily based on *agent's income* and *transactions in the surrounding vicinity*

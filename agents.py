@@ -2,150 +2,122 @@ import mesa
 
 class House(mesa.Agent):
     """
-    Construct the House agent class.
-    A House degrades over time, but can be maintained or repaired.
+    Construct the House agent class. Represents a house in a neighborhood whose quality is influenced
+    by the economic status of surrounding households.
     """
 
-    def __init__(self, unique_id, model, quality=100, maintenance_rate=0, base_decay_rate=0.02):
+    def __init__(self, unique_id, model, locational_quality):
         """
         Creates a new House instance.
 
         Args:
             unique_id: An identifier for the house.
             model: The model instance the house belongs to.
-            quality: A numeric value representing the initial quality of the house.
-            maintenance_rate: How much of the quality can be restored each step.
-            base_decay_rate: Base percentage of quality decay per step.
+            locational_quality: A numeric value representing the initial neighborhood quality.
         """
         super().__init__(unique_id, model)
-        self.quality = quality
-        self.maintenance_rate = maintenance_rate
-        self.base_decay_rate = base_decay_rate  # Base decay rate as a percentage
+        self.locational_quality = locational_quality
 
     def step(self):
         """
-        Reduce the quality of the house due to natural decay, then apply any maintenance.
-        Decay rate increases as quality decreases, simulating accelerated deterioration.
+        Updates locational quality based on the average income of neighboring households.
         """
-        # Dynamic decay rate: as quality decreases, decay rate increases
-        dynamic_decay_rate = self.base_decay_rate * (1 - self.quality / 100)
-        decay_amount = dynamic_decay_rate * self.quality
+        neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
+        incomes = []
 
-        # Reduce quality by the decay amount
-        self.quality -= decay_amount
-        if self.quality < 0:
-            self.quality = 0  # Ensuring quality doesn't go negative
+        for agent in neighbors:
+            if isinstance(agent, Resident):
+                incomes.append(agent.income)
 
-        # Apply maintenance
-        self.quality += self.maintenance_rate
-        if self.quality > 99.9:
-            self.quality = 99.9  # Ensuring quality doesn't exceed 100%
+        if incomes:  # To avoid division by zero if there are no neighbors
+            new_locational_quality = sum(incomes) / len(incomes)
+            # I'm considering applying other transformations at this point..
+            self.locational_quality = new_locational_quality
 
 
 class Resident(mesa.Agent):
     """
-    Construct a residence agent class that includes economic attributes influencing housing maintenance
-    alongside existing spatial and social utilities.
+    Construct a residence agent class that includes economic attributes influencing decisions based on
+    locational quality and income.
     """
 
-    def __init__(self, unique_id, model, agent_type, happiness_threshold, income):
+    def __init__(self, unique_id, model, happiness_threshold, income):
         """
         Initialize a Resident agent with socioeconomic characteristics and a happiness threshold.
+
+        Args:
+            unique_id: An identifier for the resident.
+            model: The model instance the resident belongs to.
+            happiness_threshold: Minimum level of utility for the resident to stay put.
+            income: Annual income of the resident, influencing their economic decisions.
         """
         super().__init__(unique_id, model)
-        self.type = agent_type
         self.happiness_threshold = happiness_threshold
-        self.last_utility = 0
         self.income = income
+        self.last_utility = 0
 
     def step(self):
         """
         Perform actions during a simulation step.
         """
         self.calculate_utilities()
-        self.manage_house()
         self.decide_to_move()
 
     def calculate_utilities(self):
         """
-        Calculate and update utilities based on location and neighborhood.
+        Calculate and update utilities based on the locational quality of the residence and personal income.
         """
-        distance_to_center = abs(self.pos[0] - 52) + abs(self.pos[1] - 36)
-        travel_time = (distance_to_center * 1000) / 30000 * 60
-        travel_utility = 60 - travel_time
+        # Directly access house since every cell is a house
+        house = self.model.grid.get_cell_list_contents([self.pos])[0]  # First element since every cell is a house
+        locational_quality = house.locational_quality
 
-        if travel_utility < 0:
-            normalized_travel_utility = travel_utility / 292
-        else:
-            normalized_travel_utility = travel_utility / 60
-
-        similar, unsimilar = 0, 0
-        for neighbor in self.model.grid.iter_neighbors(self.pos, moore=True, radius=2):
-            if neighbor.pos != (52, 36) and isinstance(neighbor, Resident):
-                if neighbor.type == self.type:
-                    similar += 1
-                else:
-                    unsimilar += 1
-
-        homophily_utility = (1.2 * similar - unsimilar)
-        normalized_homophily_utility = homophily_utility / 24
-
-        total_utility = (self.model.preference * normalized_travel_utility) + ((1 - self.model.preference) * normalized_homophily_utility)
+        # Calculate total utility - I wonder if we should implement a cost associated with locational quality - perhaps in the form of rent?
+        total_utility = (self.model.preference * locational_quality) + ((1 - self.model.preference) * self.income)
         self.update_happiness(total_utility)
-
-    def manage_house(self):
-        """
-        Manage and maintain the house quality based on income and house condition.
-        """
-        home = next((obj for obj in self.model.grid.get_cell_list_contents([self.pos]) if isinstance(obj, House)), None)
-        if home:
-            maintenance_contribution = self.determine_maintenance_contribution(home.quality)
-            home.maintenance_rate = maintenance_contribution  # Set maintenance rate directly
-
-    def determine_maintenance_contribution(self, house_quality):
-        """
-        Adjust the financial contribution towards housing maintenance based on income and house quality.
-        """
-        if house_quality < 50:
-            return max(5, self.income * 0.01)  # Urgent maintenance if quality is low
-        elif self.income < 30000:
-            return 1
-        elif self.income < 60000:
-            return 3
-        else:
-            return 5
 
     def decide_to_move(self):
         """
         Decide whether to move based on current utility compared to happiness threshold.
+        If the current utility is less than the happiness threshold, attempt to move to a better location.
         """
         if self.last_utility < self.happiness_threshold:
-            self.model.grid.move_to_empty(self)
-        else:
-            self.model.happy += 1
+            # Attempt to find a better house
+            new_position = self.find_new_house()
+            if new_position:
+                self.model.grid.move_agent(self, new_position)
+
+    def find_new_house(self):
+        """
+        Find the best house to move to on the entire grid, based on higher locational quality.
+        """
+        best_position = None
+        best_quality = -float('inf')
+
+        # Loop through every cell in the grid to find the best house
+        for x in range(self.model.grid.width):
+            for y in range(self.model.grid.height):
+                pos = (x, y)
+                house = self.model.grid.get_cell_list_contents([pos])[0]  # First element since every cell is a house
+                if house.locational_quality > best_quality:
+                    best_quality = house.locational_quality
+                    best_position = pos
+
+        return best_position
 
     def update_happiness(self, total_utility):
         """
         Adjust happiness threshold based on the last utility.
+        Positive change increases happiness threshold, negative change decreases it.
         """
         if total_utility > self.last_utility:
             self.happiness_threshold += 0.05 * (1 - self.happiness_threshold)
         elif total_utility < self.last_utility:
             self.happiness_threshold -= 0.05 * (1 - self.happiness_threshold)
         self.last_utility = total_utility
+
  
 
-class CityCenter(mesa.Agent):
-    """
-    Create a city center agent
-    """
-
-    def __init__(self, unique_id, model):
-        """
-        Initialize an agent
-        
-        Args:
-           unique_id: an agent's unique identifier
-           model: Schelling segregation model
-        """
-        super().__init__(unique_id, model)
+class Immigrant(Resident):
+    def __init__(self, unique_id, model, income):
+        super().__init__(unique_id, model, income)
+        # More work on this later

@@ -1,4 +1,6 @@
 import mesa
+import numpy as np
+
 
 class House(mesa.Agent):
     """
@@ -22,17 +24,11 @@ class House(mesa.Agent):
         """
         Updates locational quality based on the average income of neighboring households.
         """
+        # Step 1: House agent updates locational quality based on the incomes of neighboring households.
         neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
-        incomes = []
-
-        for agent in neighbors:
-            if isinstance(agent, Resident):
-                incomes.append(agent.income)
-
-        if incomes:  # To avoid division by zero if there are no neighbors
-            new_locational_quality = sum(incomes) / len(incomes)
-            # I'm considering applying other transformations at this point..
-            self.locational_quality = new_locational_quality
+        incomes = [agent.income for agent in neighbors if isinstance(agent, Resident)]
+        if incomes:
+            self.locational_quality = np.mean(incomes)
 
 
 class Resident(mesa.Agent):
@@ -55,23 +51,21 @@ class Resident(mesa.Agent):
         self.happiness_threshold = happiness_threshold
         self.income = income
         self.last_utility = 0
+        self.moved_this_step = False
 
     def step(self):
         """
         Perform actions during a simulation step.
         """
+        # Step 2: Resident evaluates utility based on locational quality and decides whether to stay or move.
         self.calculate_utilities()
         self.decide_to_move()
 
     def calculate_utilities(self):
-        """
-        Calculate and update utilities based on the locational quality of the residence and personal income.
-        """
-        # Directly access house since every cell is a house
-        house = self.model.grid.get_cell_list_contents([self.pos])[0]  # First element since every cell is a house
+        house = self.model.grid.get_cell_list_contents([self.pos])[0]
         locational_quality = house.locational_quality
 
-        # Calculate total utility - I wonder if we should implement a cost associated with locational quality - perhaps in the form of rent?
+        # Utility function. Income is just a placeholder for now
         total_utility = (self.model.preference * locational_quality) + ((1 - self.model.preference) * self.income)
         self.update_happiness(total_utility)
 
@@ -80,11 +74,13 @@ class Resident(mesa.Agent):
         Decide whether to move based on current utility compared to happiness threshold.
         If the current utility is less than the happiness threshold, attempt to move to a better location.
         """
+        # Step 3: If unhappy, residents are queued for a move sorted by income
         if self.last_utility < self.happiness_threshold:
             # Attempt to find a better house
             new_position = self.find_new_house()
             if new_position:
                 self.model.grid.move_agent(self, new_position)
+                self.moved_this_step = True
 
     def find_new_house(self):
         """
@@ -118,6 +114,6 @@ class Resident(mesa.Agent):
  
 
 class Immigrant(Resident):
-    def __init__(self, unique_id, model, income):
-        super().__init__(unique_id, model, income)
-        # More work on this later
+    def __init__(self, unique_id, model, happiness_threshold, income):
+        super().__init__(unique_id, model, happiness_threshold, income)
+        # Additional immigrant-specific setup, e.g., different happiness_threshold adjustments, endownments, etc.

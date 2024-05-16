@@ -1,5 +1,6 @@
 import mesa
 import numpy as np
+import random
 
 
 class House(mesa.Agent):
@@ -67,8 +68,11 @@ class Resident(mesa.Agent):
         house = self.model.grid.get_cell_list_contents([self.pos])[0]
         locational_quality = house.locational_quality
 
-        # Utility function. Income is just a placeholder for now
-        total_utility = (self.model.preference * locational_quality) + ((1 - self.model.preference) * self.income)
+        # Normalize income to a factor
+        income_factor = self.income / 40000
+        # Cap locational quality based on income
+        capped_quality = min(locational_quality, income_factor * 100)
+        total_utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * self.income)
         self.update_happiness(total_utility)
 
     def decide_to_move(self):
@@ -76,9 +80,12 @@ class Resident(mesa.Agent):
         Decide whether to move based on current utility compared to happiness threshold.
         If the current utility is less than the happiness threshold, attempt to move to a better location.
         """
+        house = self.model.grid.get_cell_list_contents([self.pos])[0]
+        locational_quality = house.locational_quality
+        
         # Step 3: If unhappy, residents are queued for a move sorted by income
-        if self.last_utility < self.happiness_threshold:
-            # Find another house
+        # Move if the locational quality is below income
+        if locational_quality < self.income:
             new_position = self.find_new_house()
             if new_position:
                 self.model.grid.move_agent(self, new_position)
@@ -87,8 +94,9 @@ class Resident(mesa.Agent):
             else:
                 self.failed_move_attempts += 1
                 if isinstance(self, Immigrant) and self.failed_move_attempts >= 4:
-                    # Survival Mode: Do What you have to do
                     self.convert_to_slum()
+        else:
+            self.moved_this_step = False
 
     def find_new_house(self):
         """
@@ -96,16 +104,33 @@ class Resident(mesa.Agent):
         """
         best_position = None
         best_quality = -float('inf')
+        income_factor = self.income / 40000
+        quality_threshold = self.income
 
-        # Loop through every cell in the grid to find the best house
+        potential_positions = []
+        
         for x in range(self.model.grid.width):
             for y in range(self.model.grid.height):
                 pos = (x, y)
-                house = self.model.grid.get_cell_list_contents([pos])[0]  # First element since every cell is a house
-                if house.locational_quality > best_quality:
-                    best_quality = house.locational_quality
-                    best_position = pos
+                cell_contents = self.model.grid.get_cell_list_contents(pos)
+                house = next((agent for agent in cell_contents if isinstance(agent, House)), None)
+                has_resident = any(isinstance(agent, Resident) for agent in cell_contents)
+                
+                if house and not has_resident:
+                    # Add a small randomness to the quality check to avoid clustering
+                    random_quality = house.locational_quality + np.random.uniform(-0.1, 0.1) * quality_threshold
+                    if house.locational_quality > best_quality and random_quality < self.income:
+                        best_quality = house.locational_quality
+                        best_position = pos
 
+                    # Collect potential positions based on some quality threshold
+                    if house.locational_quality >= quality_threshold * 0.8:  # A threshold to collect houses of interest
+                        potential_positions.append(pos)
+
+        # If no best position is found, choose from the potential positions
+        if not best_position and potential_positions:
+            best_position = random.choice(potential_positions)
+            
         return best_position
 
     def update_happiness(self, total_utility):
@@ -137,6 +162,7 @@ class UrbanSlum(mesa.Agent):
 class Immigrant(Resident):
     def __init__(self, unique_id, model, happiness_threshold, income):
         super().__init__(unique_id, model, happiness_threshold, income)
+        self.moved_this_step = False
     
     def step(self):
         """

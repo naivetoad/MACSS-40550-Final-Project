@@ -62,11 +62,18 @@ class Gentrification(mesa.Model):
                 ## Thomas you can weigh in here. On the functions we spoke about ytd
                 income = np.random.lognormal(mean=np.log(30000 * self.income_variance), sigma=0.3, size=1)[0]
                 threshold = np.random.beta(a=2.0, b=3.0, size=1)[0] * 0.2 + 0.3
-                immigrant = Immigrant(self.num_agents + self.immigrants_added, self, threshold, income)
-                x, y = self.grid.find_empty()
+                immigrant = Immigrant(self.next_id(), self, threshold, income)
+                x, y = self.random_empty_cell()
                 self.grid.place_agent(immigrant, (x, y))
                 self.schedule.add(immigrant)
                 self.immigrants_added += 1
+
+    def random_empty_cell(self):
+        while True:
+            x = self.random.randrange(self.grid.width)
+            y = self.random.randrange(self.grid.height)
+            if self.grid.is_cell_empty((x, y)):
+                return (x, y)
 
 class CustomScheduler(mesa.time.BaseScheduler):
     """

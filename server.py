@@ -5,20 +5,8 @@ from mesa.visualization.modules import ChartModule
 from model import Gentrification
 from agents import Resident, Immigrant, UrbanSlum
 
-
-def get_happy_agents(model):
-    """
-    Display data collection in text
-    """
-    return f"Happy agents: {model.happy}"
-
-
 def agent_portrayal(agent):
-    """
-    Portrayal method for canvas
-    """
     portrayal = {"Shape": "rect", "Filled": "true", "Layer": 0, "w": 1, "h": 1}
-
     if isinstance(agent, Resident):
         portrayal["Color"] = "blue" if agent.moved_this_step else "green"
         portrayal["Layer"] = 1
@@ -32,7 +20,6 @@ def agent_portrayal(agent):
     elif isinstance(agent, UrbanSlum):
         portrayal["Color"] = "black"
         portrayal["Layer"] = 0  # Draw slums below agents if desired
-
     return portrayal
 
 
@@ -60,8 +47,8 @@ urban_slums_chart = ChartModule(
 # Set up modifiable paramters 
 model_params = {
     "density": mesa.visualization.Slider("Agent Density", 0.35, 0.1, 1.0, 0.05),
-    "width": 20,
-    "height": 20,
+    "width": 60,
+    "height": 70,
     "immigrant_start": mesa.visualization.Slider("Immigrant Start", 100, 50, 300, 1),
     "immigrant_count": mesa.visualization.Slider("Immigrant Count", 50, 10, 200, 1),
     "income_variance": mesa.visualization.Slider("Income Variance", 0.25, 0.1, 1.0, 0.05)

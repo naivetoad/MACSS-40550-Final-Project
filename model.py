@@ -1,11 +1,10 @@
 import mesa
 import numpy as np
-import random
 from agents import Resident, House, Immigrant, UrbanSlum
 from mesa.datacollection import DataCollector
 
 class Gentrification(mesa.Model):
-    def __init__(self, density, width, height, immigrant_start, immigrant_count=50, income_variance=0.25):
+    def __init__(self, width, height, density, immigrant_start, immigrant_count=50, income_variance=0.25, preference=0.5):
         super().__init__()
         self.grid = mesa.space.MultiGrid(width, height, True)
         self.schedule = CustomScheduler(self)
@@ -14,6 +13,7 @@ class Gentrification(mesa.Model):
         self.immigrant_count = immigrant_count  # Total number of immigrants to add
         self.immigrants_added = 0  # Counter for added immigrants
         self.income_variance = income_variance
+        self.preference = preference  # Add preference as an attribute of the model
         self.datacollector = DataCollector(
             model_reporters={
                 "Average Income": lambda m: np.mean([a.income for a in m.schedule.agents if isinstance(a, Resident)]),

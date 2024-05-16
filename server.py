@@ -22,18 +22,9 @@ def agent_portrayal(agent):
         portrayal["Layer"] = 0  # Draw slums below agents if desired
     return portrayal
 
-
 # Set up the canvas
-grid = CanvasGrid(
-    portrayal_method=agent_portrayal,
-    grid_width=60,
-    grid_height=70,
-    canvas_width=600,
-    canvas_height=700,
-)
+grid = CanvasGrid(agent_portrayal, 60, 70, 600, 700)
 
-
-# Display data collection in a chart
 average_income_chart = ChartModule(
     [{"Label": "Average Income", "Color": "Blue"}],
     data_collector_name='datacollector'
@@ -44,20 +35,24 @@ urban_slums_chart = ChartModule(
     data_collector_name='datacollector'
 )
 
-# Set up modifiable paramters 
+# Set up modifiable parameters
 model_params = {
     "density": mesa.visualization.Slider("Agent Density", 0.35, 0.1, 1.0, 0.05),
     "width": 60,
     "height": 70,
     "immigrant_start": mesa.visualization.Slider("Immigrant Start", 100, 50, 300, 1),
     "immigrant_count": mesa.visualization.Slider("Immigrant Count", 50, 10, 200, 1),
-    "income_variance": mesa.visualization.Slider("Income Variance", 0.25, 0.1, 1.0, 0.05)
+    "income_variance": mesa.visualization.Slider("Income Variance", 0.25, 0.1, 1.0, 0.05),
+    "preference": mesa.visualization.Slider("Preference", 0.5, 0.0, 1.0, 0.05)
 }
 
-# Set up the server 
+# Set up the server
 server = ModularServer(
     Gentrification,
     [grid, average_income_chart, urban_slums_chart],
     "Gentrification Model",
     model_params
 )
+
+server.port = 8532
+server.launch()

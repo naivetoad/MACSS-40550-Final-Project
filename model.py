@@ -1,28 +1,43 @@
 import mesa
 import numpy as np
-from agents import Resident, House, Immigrant
+import random
+from agents import Resident, House, Immigrant, UrbanSlum
+from mesa.datacollection import DataCollector
 
 class Gentrification(mesa.Model):
-    def __init__(self, N, width, height, immigrant_start, immigrant_count=50):
+    def __init__(self, density, width, height, immigrant_start, immigrant_count=50, income_variance=0.25):
         super().__init__()
-        self.num_agents = N
         self.grid = mesa.space.MultiGrid(width, height, True)
         self.schedule = CustomScheduler(self)
         self.immigrant_start = immigrant_start
         self.current_step = 0  # Track the current timestep
         self.immigrant_count = immigrant_count  # Total number of immigrants to add
         self.immigrants_added = 0  # Counter for added immigrants
+        self.income_variance = income_variance
+        self.datacollector = DataCollector(
+            model_reporters={
+                "Average Income": lambda m: np.mean([a.income for a in m.schedule.agents if isinstance(a, Resident)]),
+                "Urban Slums": lambda m: sum(1 for a in m.schedule.agents if isinstance(a, UrbanSlum))
+            }
+        )
         
+        # Prelim - Calculate the total number of agents based on the density
+        total_cells = width * height
+        num_agents = int(total_cells * density)
+
         # Step 0: Initialize agents on the grid.
-        # Initialize agents
-        for i in range(self.num_agents):
-            ## Thomas you can weigh in here. On the functions we spoke about ytd
-            income = np.random.lognormal(mean=np.log(40000), sigma=0.25, size=1)[0]
-            threshold = np.random.beta(a=2.5, b=2.5, size=1)[0] * 0.2 + 0.3
-            agent = Resident(i, self, threshold, income)
-            x, y = self.grid.find_empty()
-            self.grid.place_agent(agent, (x, y))
-            self.schedule.add(agent)
+        # Initialize agents randomly based on density
+        placed = 0
+        while placed < num_agents:
+            x = self.random.randrange(width)
+            y = self.random.randrange(height)
+            if self.grid.is_cell_empty((x, y)):
+                income = np.random.lognormal(mean=np.log(40000 * self.income_variance), sigma=0.25, size=1)[0]
+                threshold = np.random.beta(a=2.5, b=2.5, size = 1)[0] * 0.2 + 0.3
+                agent = Resident(self.next_id(), self, threshold, income)
+                self.grid.place_agent(agent, (x, y))
+                self.schedule.add(agent)
+                placed += 1
 
     def step(self):
         # Add immigrants gradually each step after immigrant_start
@@ -37,7 +52,7 @@ class Gentrification(mesa.Model):
         for _ in range(number):
             if self.immigrants_added < self.immigrant_count:
                 ## Thomas you can weigh in here. On the functions we spoke about ytd
-                income = np.random.lognormal(mean=np.log(30000), sigma=0.3, size=1)[0]
+                income = np.random.lognormal(mean=np.log(30000 * self.income_variance), sigma=0.3, size=1)[0]
                 threshold = np.random.beta(a=2.0, b=3.0, size=1)[0] * 0.2 + 0.3
                 immigrant = Immigrant(self.num_agents + self.immigrants_added, self, threshold, income)
                 x, y = self.grid.find_empty()

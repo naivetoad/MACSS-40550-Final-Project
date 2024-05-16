@@ -1,5 +1,9 @@
 import mesa
-from model import Schelling
+from mesa.visualization.modules import CanvasGrid
+from mesa.visualization.ModularVisualization import ModularServer
+from mesa.visualization.modules import ChartModule
+from model import Gentrification
+from agents import Resident, Immigrant, UrbanSlum
 
 
 def get_happy_agents(model):
@@ -9,32 +13,32 @@ def get_happy_agents(model):
     return f"Happy agents: {model.happy}"
 
 
-def schelling_draw(agent):
+def agent_portrayal(agent):
     """
     Portrayal method for canvas
     """
-    # Portrayl for blocks
-    portrayal = {"Shape": "rect", "w": 1, "h": 1, "Filled": "true", "Layer": 0, "Color": "white"}
-        
-    # Portrayl for the city center
-    if agent.pos  == (52, 36):
-        portrayal = {"Shape": "rect", "w": 0.8, "h": 0.8, "Filled": "true", "Layer": 2, "Color": "black"}
-    else:
-        # Portrayal for agents
-        if agent is not None:
-            portrayal = {"Shape": "circle", "r": 0.5, "Filled": "true", "Layer": 1}
-            if agent.type == 0:
-                portrayal["Color"] = ["Blue"]
-                portrayal["stroke_color"] = "#000000"
-            else:
-                portrayal["Color"] = ["Yellow"]
-                portrayal["stroke_color"] = "#000000"
+    portrayal = {"Shape": "rect", "Filled": "true", "Layer": 0, "w": 1, "h": 1}
+
+    if isinstance(agent, Resident):
+        portrayal["Color"] = "blue" if agent.moved_this_step else "green"
+        portrayal["Layer"] = 1
+        portrayal["text"] = round(agent.income, 1)
+        portrayal["text_color"] = "white"
+    elif isinstance(agent, Immigrant):
+        portrayal["Color"] = "red"
+        portrayal["Layer"] = 1
+        portrayal["text"] = round(agent.income, 1)
+        portrayal["text_color"] = "white"
+    elif isinstance(agent, UrbanSlum):
+        portrayal["Color"] = "black"
+        portrayal["Layer"] = 0  # Draw slums below agents if desired
+
     return portrayal
 
 
 # Set up the canvas
-canvas_element = mesa.visualization.CanvasGrid(
-    portrayal_method=schelling_draw,
+grid = CanvasGrid(
+    portrayal_method=agent_portrayal,
     grid_width=60,
     grid_height=70,
     canvas_width=600,
@@ -43,29 +47,30 @@ canvas_element = mesa.visualization.CanvasGrid(
 
 
 # Display data collection in a chart
-happy_chart = mesa.visualization.ChartModule([{"Label": "happy", "Color": "Black"}])
+average_income_chart = ChartModule(
+    [{"Label": "Average Income", "Color": "Blue"}],
+    data_collector_name='datacollector'
+)
 
-happy_chart2 = mesa.visualization.ChartModule([{"Label": "avg_utility_type0", "Color": "Blue"}, {"Label": "avg_utility_type1", "Color": "Yellow"}])
+urban_slums_chart = ChartModule(
+    [{"Label": "Urban Slums", "Color": "Black"}],
+    data_collector_name='datacollector'
+)
 
 # Set up modifiable paramters 
 model_params = {
-    "height": 70,
-    "width": 60,
-    "density": mesa.visualization.Slider(
-        name="Agent Density", value=0.35, min_value=0.1, max_value=1.0, step=0.05
-    ),
-    "minority_pc": mesa.visualization.Slider(
-        name="Minority Percentage", value=0.35, min_value=0.00, max_value=1.0, step=0.05
-    ),
-    "preference": mesa.visualization.Slider(
-        name="Preference(0:Homophily, 1:travel time)", value = 0.5, min_value = 0, max_value=1, step=0.1
-    )
+    "density": mesa.visualization.Slider("Agent Density", 0.35, 0.1, 1.0, 0.05),
+    "width": 20,
+    "height": 20,
+    "immigrant_start": mesa.visualization.Slider("Immigrant Start", 100, 50, 300, 1),
+    "immigrant_count": mesa.visualization.Slider("Immigrant Count", 50, 10, 200, 1),
+    "income_variance": mesa.visualization.Slider("Income Variance", 0.25, 0.1, 1.0, 0.05)
 }
 
 # Set up the server 
-server = mesa.visualization.ModularServer(
-    model_cls=Schelling,
-    visualization_elements=[canvas_element, get_happy_agents, happy_chart, happy_chart2],
-    name="Schelling Segregation Model",
-    model_params=model_params,
+server = ModularServer(
+    Gentrification,
+    [grid, average_income_chart, urban_slums_chart],
+    "Gentrification Model",
+    model_params
 )

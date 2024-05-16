@@ -36,16 +36,27 @@ class Gentrification(mesa.Model):
         # Step 0b: Initialize agents on the grid.
         # Initialize agents randomly based on density
         placed = 0
-        while placed < num_agents:
+        max_attempts = total_cells * 2  # Limit the number of placement attempts to avoid infinite loop
+        attempts = 0
+        while placed < num_agents and attempts < max_attempts:
             x = self.random.randrange(width)
             y = self.random.randrange(height)
-            if self.grid.is_cell_empty((x, y)):
+            print(f"Trying to place agent at: x={x}, y={y}")  # Print the random positions for debugging
+
+            cell_contents = self.grid.get_cell_list_contents((x, y))
+            has_resident = any(isinstance(agent, Resident) for agent in cell_contents)
+
+            if not has_resident:
                 income = np.random.lognormal(mean=np.log(40000 * self.income_variance), sigma=0.25, size=1)[0]
-                threshold = np.random.beta(a=2.5, b=2.5, size = 1)[0] * 0.2 + 0.3
+                threshold = np.random.beta(a=2.5, b=2.5, size=1)[0] * 0.2 + 0.3
                 agent = Resident(self.next_id(), self, threshold, income)
                 self.grid.place_agent(agent, (x, y))
                 self.schedule.add(agent)
                 placed += 1
+            attempts += 1
+        print(placed)
+        if placed < num_agents:
+            print(f"Only placed {placed} agents out of {num_agents} due to density constraints.")
 
     def step(self):
         # Add immigrants gradually each step after immigrant_start
@@ -72,7 +83,12 @@ class Gentrification(mesa.Model):
         while True:
             x = self.random.randrange(self.grid.width)
             y = self.random.randrange(self.grid.height)
-            if self.grid.is_cell_empty((x, y)):
+            print(f"Trying to place immigrant at: x={x}, y={y}")  # Print the random positions for debugging
+
+            cell_contents = self.grid.get_cell_list_contents((x, y))
+            has_resident = any(isinstance(agent, Resident) for agent in cell_contents)
+
+            if not has_resident:
                 return (x, y)
 
 class CustomScheduler(mesa.time.BaseScheduler):
@@ -88,6 +104,11 @@ class CustomScheduler(mesa.time.BaseScheduler):
         # Activate each agent in sorted order
         for _, agent in agents_with_priority:
             agent.step()
+
+        # Step all House and UrbanSlum agents
+        for agent in self.agents:
+            if isinstance(agent, House) or isinstance(agent, UrbanSlum):
+                agent.step()
 
         self.steps += 1
         self.time += 1

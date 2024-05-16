@@ -3,9 +3,12 @@ from mesa.visualization.modules import CanvasGrid
 from mesa.visualization.ModularVisualization import ModularServer
 from mesa.visualization.modules import ChartModule
 from model import Gentrification
-from agents import Resident, Immigrant, UrbanSlum
+from agents import Resident, Immigrant, UrbanSlum, House
 
 def agent_portrayal(agent):
+    if agent is None:
+        return
+    
     portrayal = {"Shape": "rect", "Filled": "true", "Layer": 0, "w": 1, "h": 1}
     if isinstance(agent, Resident):
         portrayal["Color"] = "blue" if agent.moved_this_step else "green"
@@ -20,10 +23,19 @@ def agent_portrayal(agent):
     elif isinstance(agent, UrbanSlum):
         portrayal["Color"] = "black"
         portrayal["Layer"] = 0  # Draw slums below agents if desired
+    elif isinstance(agent, House):
+        portrayal["Color"] = "gray"
+        portrayal["Layer"] = 0
     return portrayal
 
 # Set up the canvas
-grid = CanvasGrid(agent_portrayal, 60, 70, 600, 700)
+grid = CanvasGrid(
+    portrayal_method=agent_portrayal,
+    grid_width=60,
+    grid_height=70,
+    canvas_width=600,
+    canvas_height=700,
+)
 
 average_income_chart = ChartModule(
     [{"Label": "Average Income", "Color": "Blue"}],

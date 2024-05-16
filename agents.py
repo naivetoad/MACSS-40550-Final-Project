@@ -52,12 +52,14 @@ class Resident(mesa.Agent):
         self.income = income
         self.last_utility = 0
         self.failed_move_attempts = 0  # Track failed move attempts
+        self.moved_this_step = False  # Track if the agent moved in the current step
 
     def step(self):
         """
         Perform actions during a simulation step.
         """
         # Step 2: Resident evaluates utility based on locational quality and decides whether to stay or move.
+        self.moved_this_step = False
         self.calculate_utilities()
         self.decide_to_move()
 
@@ -80,6 +82,7 @@ class Resident(mesa.Agent):
             new_position = self.find_new_house()
             if new_position:
                 self.model.grid.move_agent(self, new_position)
+                self.moved_this_step = True
                 self.failed_move_attempts = 0
             else:
                 self.failed_move_attempts += 1

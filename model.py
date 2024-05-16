@@ -3,7 +3,7 @@ import numpy as np
 from agents import Resident, House, Immigrant
 
 class Gentrification(mesa.Model):
-    def __init__(self, N, width, height):
+    def __init__(self, N, width, height, immigrant_start, immigrant_count=50):
         super().__init__()
         self.num_agents = N
         self.grid = mesa.space.MultiGrid(width, height, True)

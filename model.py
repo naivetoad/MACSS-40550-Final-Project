@@ -97,7 +97,7 @@ class CustomScheduler(mesa.time.BaseScheduler):
     """
     def step(self):
         # List of all agents who are below their happiness threshold
-        agents_with_priority = [(agent.income, agent) for agent in self.agents if agent.last_utility < agent.happiness_threshold]
+        agents_with_priority = [(agent.income, agent) for agent in self.agents if isinstance(agent, Resident) and agent.last_utility < agent.happiness_threshold]
         # Sort agents by income, highest first
         agents_with_priority.sort(reverse=True, key=lambda x: x[0])
 
@@ -106,9 +106,9 @@ class CustomScheduler(mesa.time.BaseScheduler):
             agent.step()
 
         # Step all House and UrbanSlum agents
-        for agent in self.agents:
-            if isinstance(agent, House) or isinstance(agent, UrbanSlum):
-                agent.step()
+        #for agent in self.agents:
+            #if isinstance(agent, House) or isinstance(agent, UrbanSlum):
+                #agent.step()
 
         self.steps += 1
         self.time += 1

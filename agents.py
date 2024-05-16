@@ -51,7 +51,7 @@ class Resident(mesa.Agent):
         self.happiness_threshold = happiness_threshold
         self.income = income
         self.last_utility = 0
-        self.moved_this_step = False
+        self.failed_move_attempts = 0  # Track failed move attempts
 
     def step(self):
         """
@@ -76,11 +76,16 @@ class Resident(mesa.Agent):
         """
         # Step 3: If unhappy, residents are queued for a move sorted by income
         if self.last_utility < self.happiness_threshold:
-            # Attempt to find a better house
+            # Find another house
             new_position = self.find_new_house()
             if new_position:
                 self.model.grid.move_agent(self, new_position)
-                self.moved_this_step = True
+                self.failed_move_attempts = 0
+            else:
+                self.failed_move_attempts += 1
+                if isinstance(self, Immigrant) and self.failed_move_attempts >= 4:
+                    # Survival Mode: Do What you have to do
+                    self.convert_to_slum()
 
     def find_new_house(self):
         """
@@ -111,9 +116,28 @@ class Resident(mesa.Agent):
             self.happiness_threshold -= 0.05 * (1 - self.happiness_threshold)
         self.last_utility = total_utility
 
- 
+    def convert_to_slum(self):
+        # Convert current cell to an urban slum.
+        slum = UrbanSlum(self.model, self.pos, self.model.next_id())
+        self.model.grid.place_agent(slum, self.pos)
+        self.model.schedule.remove(self)
+
+class UrbanSlum(mesa.Agent):
+    """
+    Represents an urban slum in the model.
+    """
+    def __init__(self, model, pos, unique_id):
+        super().__init__(unique_id, model)
+        self.pos = pos
+        self.locational_quality = 0  # [TBD] Slums might have minimum locational quality
 
 class Immigrant(Resident):
     def __init__(self, unique_id, model, happiness_threshold, income):
         super().__init__(unique_id, model, happiness_threshold, income)
-        # Additional immigrant-specific setup, e.g., different happiness_threshold adjustments, endownments, etc.
+    
+    def step(self):
+        """
+        Custom step behavior for immigrants, if different from residents.
+        """
+        self.calculate_utilities()
+        self.decide_to_move()

@@ -53,6 +53,3 @@ server = ModularServer(
     "Gentrification Model",
     model_params
 )
-
-server.port = 8532
-server.launch()

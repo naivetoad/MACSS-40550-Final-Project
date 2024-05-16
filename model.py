@@ -106,9 +106,9 @@ class CustomScheduler(mesa.time.BaseScheduler):
             agent.step()
 
         # Step all House and UrbanSlum agents
-        #for agent in self.agents:
-            #if isinstance(agent, House) or isinstance(agent, UrbanSlum):
-                #agent.step()
+        for agent in self.agents:
+            if isinstance(agent, House) or isinstance(agent, UrbanSlum):
+                agent.step()
 
         self.steps += 1
         self.time += 1

@@ -26,15 +26,17 @@ def agent_portrayal(agent):
     elif isinstance(agent, House):
         portrayal["Color"] = "gray"
         portrayal["Layer"] = 0
+        portrayal["text"] = round(agent.locational_quality, 1)
+        portrayal["text_color"] = "black"
     return portrayal
 
 # Set up the canvas
 grid = CanvasGrid(
     portrayal_method=agent_portrayal,
-    grid_width=60,
-    grid_height=70,
-    canvas_width=600,
-    canvas_height=700,
+    grid_width=20,
+    grid_height=20,
+    canvas_width=400,
+    canvas_height=400,
 )
 
 average_income_chart = ChartModule(
@@ -50,10 +52,10 @@ urban_slums_chart = ChartModule(
 # Set up modifiable parameters
 model_params = {
     "density": mesa.visualization.Slider("Agent Density", 0.35, 0.1, 1.0, 0.05),
-    "width": 60,
-    "height": 70,
-    "immigrant_start": mesa.visualization.Slider("Immigrant Start", 100, 50, 300, 1),
-    "immigrant_count": mesa.visualization.Slider("Immigrant Count", 50, 10, 200, 1),
+    "width": 20,
+    "height": 20,
+    "immigrant_start": mesa.visualization.Slider("Immigrant Start", 60, 50, 300, 1),
+    "immigrant_count": mesa.visualization.Slider("Immigrant Count", 30, 10, 200, 1),
     "income_variance": mesa.visualization.Slider("Income Variance", 0.25, 0.1, 1.0, 0.05),
     "preference": mesa.visualization.Slider("Preference", 0.5, 0.0, 1.0, 0.05)
 }

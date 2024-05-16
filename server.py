@@ -17,7 +17,7 @@ def agent_portrayal(agent):
         portrayal["text"] = round(agent.income, 1)
         portrayal["text_color"] = "white"
     elif isinstance(agent, Immigrant):
-        portrayal["Color"] = "red"
+        portrayal["Color"] = "purple"
         portrayal["Layer"] = 1
         portrayal["text"] = round(agent.income, 1)
         portrayal["text_color"] = "white"
@@ -66,8 +66,8 @@ model_params = {
     "density": mesa.visualization.Slider("Agent Density", 0.6, 0.1, 1.0, 0.05),
     "width": 20,
     "height": 20,
-    "immigrant_start": mesa.visualization.Slider("Immigrant Start", 20, 1, 300, 1),
-    "immigrant_count": mesa.visualization.Slider("Immigrant Count", 150, 1, 200, 1),
+    "immigrant_start": mesa.visualization.Slider("Migrant Start", 20, 1, 300, 1),
+    "immigrant_count": mesa.visualization.Slider("Migrant Count", 150, 1, 200, 1),
     "income_variance": mesa.visualization.Slider("Income Variance", 0.25, 0.1, 1.0, 0.05),
     "preference": mesa.visualization.Slider("Preference", 0.5, 0.0, 1.0, 0.05)
 }

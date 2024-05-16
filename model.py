@@ -25,7 +25,15 @@ class Gentrification(mesa.Model):
         total_cells = width * height
         num_agents = int(total_cells * density)
 
-        # Step 0: Initialize agents on the grid.
+        # Step 0a: Initialize houses on every grid
+        for x in range(width):
+            for y in range(height):
+                locational_quality = 0
+                house = House(self.next_id(), self, locational_quality)
+                self.grid.place_agent(house, (x, y))
+                self.schedule.add(house)
+
+        # Step 0b: Initialize agents on the grid.
         # Initialize agents randomly based on density
         placed = 0
         while placed < num_agents:

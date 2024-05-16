@@ -41,23 +41,33 @@ grid = CanvasGrid(
     canvas_height=400,
 )
 
-average_income_chart = ChartModule(
-    [{"Label": "Average Income", "Color": "Blue"}],
+# average_income_chart = ChartModule(
+#     [{"Label": "Average Income", "Color": "Blue"}],
+#     data_collector_name='datacollector'
+# )
+
+# urban_slums_chart = ChartModule(
+#     [{"Label": "Urban Slums", "Color": "Black"}],
+#     data_collector_name='datacollector'
+# )
+
+unhappy_agents_chart = ChartModule(
+    [{"Label": "Unhappy Agents", "Color": "Red"}],
     data_collector_name='datacollector'
 )
 
-urban_slums_chart = ChartModule(
-    [{"Label": "Urban Slums", "Color": "Black"}],
-    data_collector_name='datacollector'
-)
+# average_utility_chart = ChartModule(
+#     [{"Label": "Average Utility", "Color": "Green"}],
+#     data_collector_name='datacollector'
+# )
 
 # Set up modifiable parameters 
 model_params = {
-    "density": mesa.visualization.Slider("Agent Density", 0.5, 0.1, 1.0, 0.05),
+    "density": mesa.visualization.Slider("Agent Density", 0.6, 0.1, 1.0, 0.05),
     "width": 20,
     "height": 20,
-    "immigrant_start": mesa.visualization.Slider("Immigrant Start", 60, 1, 300, 1),
-    "immigrant_count": mesa.visualization.Slider("Immigrant Count", 30, 1, 200, 1),
+    "immigrant_start": mesa.visualization.Slider("Immigrant Start", 20, 1, 300, 1),
+    "immigrant_count": mesa.visualization.Slider("Immigrant Count", 150, 1, 200, 1),
     "income_variance": mesa.visualization.Slider("Income Variance", 0.25, 0.1, 1.0, 0.05),
     "preference": mesa.visualization.Slider("Preference", 0.5, 0.0, 1.0, 0.05)
 }
@@ -65,7 +75,7 @@ model_params = {
 # Set up the server
 server = ModularServer(
     Gentrification,
-    [grid, average_income_chart, urban_slums_chart],
+    [grid, unhappy_agents_chart],
     "Gentrification Model",
     model_params
 )

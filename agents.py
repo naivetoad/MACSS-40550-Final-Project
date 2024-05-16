@@ -54,6 +54,8 @@ class Resident(mesa.Agent):
         self.last_utility = 0
         self.failed_move_attempts = 0  # Track failed move attempts
         self.moved_this_step = False  # Track if the agent moved in the current step
+        self.is_unhappy = False
+        self.utility = 0  # Track utility
 
     def step(self):
         """
@@ -63,6 +65,8 @@ class Resident(mesa.Agent):
         self.moved_this_step = False
         self.calculate_utilities()
         self.decide_to_move()
+        if self.moved_this_step:
+            self.calculate_utilities()
 
     def calculate_utilities(self):
         house = self.model.grid.get_cell_list_contents([self.pos])[0]
@@ -73,7 +77,10 @@ class Resident(mesa.Agent):
         # Cap locational quality based on income
         capped_quality = min(locational_quality, income_factor * 100)
         total_utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * self.income)
-        self.update_happiness(total_utility)
+        #self.update_happiness(total_utility)
+
+    def update_happiness_status(self):
+        self.is_unhappy = self.last_utility < self.happiness_threshold
 
     def decide_to_move(self):
         """
@@ -91,12 +98,15 @@ class Resident(mesa.Agent):
                 self.model.grid.move_agent(self, new_position)
                 self.moved_this_step = True
                 self.failed_move_attempts = 0
+                self.is_unhappy = False
             else:
                 self.failed_move_attempts += 1
                 if isinstance(self, Immigrant) and self.failed_move_attempts >= 4:
                     self.convert_to_slum()
+            self.is_unhappy = True
         else:
             self.moved_this_step = False
+            self.is_unhappy = False
 
     def find_new_house(self):
         """
@@ -143,6 +153,7 @@ class Resident(mesa.Agent):
         elif total_utility < self.last_utility:
             self.happiness_threshold -= 0.05 * (1 - self.happiness_threshold)
         self.last_utility = total_utility
+        self.update_happiness_status()
 
     def convert_to_slum(self):
         # Convert current cell to an urban slum.
@@ -170,3 +181,4 @@ class Immigrant(Resident):
         """
         self.calculate_utilities()
         self.decide_to_move()
+        self.update_happiness_status()

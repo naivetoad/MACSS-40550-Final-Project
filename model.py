@@ -17,7 +17,9 @@ class Gentrification(mesa.Model):
         self.datacollector = DataCollector(
             model_reporters={
                 "Average Income": lambda m: np.mean([a.income for a in m.schedule.agents if isinstance(a, Resident)]),
-                "Urban Slums": lambda m: sum(1 for a in m.schedule.agents if isinstance(a, UrbanSlum))
+                "Urban Slums": lambda m: sum(1 for a in m.schedule.agents if isinstance(a, UrbanSlum)),
+                "Unhappy Agents": self.get_unhappy_agents,
+                "Average Utility": self.get_average_utility
             }
         )
         
@@ -71,7 +73,7 @@ class Gentrification(mesa.Model):
         for _ in range(number):
             if self.immigrants_added < self.immigrant_count:
                 ## Thomas you can weigh in here. On the functions we spoke about ytd
-                income = np.random.lognormal(mean=np.log(30000 * self.income_variance), sigma=0.3, size=1)[0]
+                income = np.random.lognormal(mean=np.log(20000 * self.income_variance), sigma=0.3, size=1)[0]
                 threshold = np.random.beta(a=2.0, b=3.0, size=1)[0] * 0.2 + 0.3
                 immigrant = Immigrant(self.next_id(), self, threshold, income)
                 x, y = self.random_empty_cell()
@@ -90,6 +92,17 @@ class Gentrification(mesa.Model):
 
             if not has_resident:
                 return (x, y)
+            
+    def get_unhappy_agents(self):
+        unhappy_count = sum(1 for agent in self.schedule.agents if isinstance(agent, Resident) and agent.is_unhappy)
+        print(f"Unhappy Agents: {unhappy_count}")  # debug, del later
+        return unhappy_count
+
+    def get_average_utility(self):
+        utilities = [agent.last_utility for agent in self.schedule.agents if isinstance(agent, Resident)]
+        avg_utility = np.mean(utilities) if utilities else 0
+        print(f"Average Utility: {avg_utility}")  # debug, del later
+        return avg_utility
 
 class CustomScheduler(mesa.time.BaseScheduler):
     """
@@ -101,14 +114,14 @@ class CustomScheduler(mesa.time.BaseScheduler):
         # Sort agents by income, highest first
         agents_with_priority.sort(reverse=True, key=lambda x: x[0])
 
-        # Activate each agent in sorted order
-        for _, agent in agents_with_priority:
-            agent.step()
-
         # Step all House and UrbanSlum agents
         for agent in self.agents:
             if isinstance(agent, House) or isinstance(agent, UrbanSlum):
                 agent.step()
+        
+        # Activate each agent in sorted order
+        for _, agent in agents_with_priority:
+            agent.step()
 
         self.steps += 1
         self.time += 1

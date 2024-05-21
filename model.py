@@ -49,7 +49,8 @@ class Gentrification(mesa.Model):
             has_resident = any(isinstance(agent, Resident) for agent in cell_contents)
 
             if not has_resident:
-                income = np.random.lognormal(mean=np.log(40000 * self.income_variance), sigma=0.25, size=1)[0]
+                resident_income_mean = 30000 + (self.income_variance * 15000)  # Adjust mean income for residents
+                income = np.random.lognormal(mean=np.log(resident_income_mean), sigma=0.25, size=1)[0]
                 threshold = np.random.beta(a=2.5, b=2.5, size=1)[0] * 0.2 + 0.3
                 agent = Resident(self.next_id(), self, threshold, income)
                 self.grid.place_agent(agent, (x, y))
@@ -72,8 +73,8 @@ class Gentrification(mesa.Model):
         # Function to add a specified number of immigrants
         for _ in range(number):
             if self.immigrants_added < self.immigrant_count:
-                ## Thomas you can weigh in here. On the functions we spoke about ytd
-                income = np.random.lognormal(mean=np.log(20000 * self.income_variance), sigma=0.3, size=1)[0]
+                immigrant_income_mean = 30000 - (self.income_variance * 15000)  # Adjust mean income for immigrants
+                income = np.random.lognormal(mean=np.log(immigrant_income_mean), sigma=0.25, size=1)[0]
                 threshold = np.random.beta(a=2.0, b=3.0, size=1)[0] * 0.2 + 0.3
                 immigrant = Immigrant(self.next_id(), self, threshold, income)
                 x, y = self.random_empty_cell()

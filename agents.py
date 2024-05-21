@@ -94,7 +94,7 @@ class Resident(mesa.Agent):
 
         # Adjust utility calculation to include in-group influence
         if isinstance(self, Immigrant):
-            self.utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * in_group_influence) #Need to find a way to assign low model_pref for in_group
+            self.utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * in_group_influence) 
         else:
             self.utility = (self.model.preference * capped_quality)
         print(f"Agent {self.unique_id} at {self.pos} has utility {self.utility}")

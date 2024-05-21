@@ -12,23 +12,23 @@ def agent_portrayal(agent):
     portrayal = {"Shape": "rect", "Filled": "true", "Layer": 0, "w": 1, "h": 1}
     
     if isinstance(agent, Resident) and not isinstance(agent, Immigrant):
-        portrayal["Color"] = "blue" if agent.moved_this_step else "green"
+        if agent.moved_this_step:
+            portrayal["Color"] = "cyan"  # Color for agents that moved this step
+        else:
+            portrayal["Color"] = "green"
         portrayal["Layer"] = 1
-        portrayal["text"] = round(agent.income, 1)
-        portrayal["text_color"] = "white"
     elif isinstance(agent, Immigrant):
-        portrayal["Color"] = "purple"
+        if agent.moved_this_step:
+            portrayal["Color"] = "magenta"  # Color for immigrants that moved this step
+        else:
+            portrayal["Color"] = "red"
         portrayal["Layer"] = 1
-        portrayal["text"] = round(agent.income, 1)
-        portrayal["text_color"] = "white"
     elif isinstance(agent, UrbanSlum):
         portrayal["Color"] = "black"
         portrayal["Layer"] = 0  # Draw slums below agents if desired
     elif isinstance(agent, House):
         portrayal["Color"] = "gray"
         portrayal["Layer"] = 0
-        portrayal["text"] = round(agent.locational_quality, 1)
-        portrayal["text_color"] = "black"
     
     return portrayal
 

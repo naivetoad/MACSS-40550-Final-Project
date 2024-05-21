@@ -69,15 +69,36 @@ class Resident(mesa.Agent):
             self.calculate_utilities()
 
     def calculate_utilities(self):
+        """
+        Calculates the utility of the resident based on locational quality and 
+        income.
+        """
         house = self.model.grid.get_cell_list_contents([self.pos])[0]
         locational_quality = house.locational_quality
+        
+        # Find the maximum locational quality in the grid
+        max_locational_quality = max(h.locational_quality for h in self.model.schedule.agents if isinstance(h, House))
 
-        # Normalize income to a factor
-        income_factor = self.income / 40000
-        # Cap locational quality based on income
-        capped_quality = min(locational_quality, income_factor * 100)
-        total_utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * self.income)
-        #self.update_happiness(total_utility)
+        # Scale locational quality between 0 and 1
+        capped_quality = locational_quality / max_locational_quality if max_locational_quality > 0 else 0
+        
+        # Define in-group criteria based on class
+        neighbors = self.model.grid.get_neighbors(self.pos, moore=True, include_center=False, radius=1)
+        if isinstance(self, Immigrant):
+            in_group_neighbors = [agent for agent in neighbors if isinstance(agent, Immigrant)]
+        else:
+            in_group_neighbors = [agent for agent in neighbors if isinstance(agent, Resident) and not isinstance(agent, Immigrant)]
+        
+        # Calculate the influence of in-group neighbors
+        in_group_influence = len(in_group_neighbors) / len(neighbors) if neighbors else 0
+
+        # Adjust utility calculation to include in-group influence
+        if isinstance(self, Immigrant):
+            self.utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * in_group_influence) #Need to find a way to assign low model_pref for in_group
+        else:
+            self.utility = (self.model.preference * capped_quality)
+        print(f"Agent {self.unique_id} at {self.pos} has utility {self.utility}")
+        self.update_happiness(self.utility)
 
     def update_happiness_status(self):
         self.is_unhappy = self.last_utility < self.happiness_threshold
@@ -149,9 +170,9 @@ class Resident(mesa.Agent):
         Positive change increases happiness threshold, negative change decreases it.
         """
         if total_utility > self.last_utility:
-            self.happiness_threshold += 0.05 * (1 - self.happiness_threshold)
+            self.happiness_threshold += 0.15 * (1 - self.happiness_threshold)
         elif total_utility < self.last_utility:
-            self.happiness_threshold -= 0.05 * (1 - self.happiness_threshold)
+            self.happiness_threshold -= 0.15 * (1 - self.happiness_threshold)
         self.last_utility = total_utility
         self.update_happiness_status()
 

@@ -25,7 +25,7 @@ def agent_portrayal(agent):
         portrayal["Layer"] = 1
     elif isinstance(agent, UrbanSlum):
         portrayal["Color"] = "black"
-        portrayal["Layer"] = 0  # Draw slums below agents if desired
+        portrayal["Layer"] = 2  # Draw slums below agents if desired
     elif isinstance(agent, House):
         portrayal["Color"] = "gray"
         portrayal["Layer"] = 0
@@ -41,25 +41,25 @@ grid = CanvasGrid(
     canvas_height=400,
 )
 
-# average_income_chart = ChartModule(
-#     [{"Label": "Average Income", "Color": "Blue"}],
-#     data_collector_name='datacollector'
-# )
+average_income_chart = ChartModule(
+    [{"Label": "Average Income", "Color": "Blue"}],
+    data_collector_name='datacollector'
+)
 
-# urban_slums_chart = ChartModule(
-#     [{"Label": "Urban Slums", "Color": "Black"}],
-#     data_collector_name='datacollector'
-# )
+urban_slums_chart = ChartModule(
+    [{"Label": "Urban Slums", "Color": "Black"}],
+    data_collector_name='datacollector'
+)
 
 unhappy_agents_chart = ChartModule(
     [{"Label": "Unhappy Agents", "Color": "Red"}],
     data_collector_name='datacollector'
 )
 
-# average_utility_chart = ChartModule(
-#     [{"Label": "Average Utility", "Color": "Green"}],
-#     data_collector_name='datacollector'
-# )
+average_utility_chart = ChartModule(
+    [{"Label": "Average Utility", "Color": "Green"}],
+    data_collector_name='datacollector'
+)
 
 # Set up modifiable parameters 
 model_params = {

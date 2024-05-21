@@ -177,9 +177,18 @@ class Resident(mesa.Agent):
         self.update_happiness_status()
 
     def convert_to_slum(self):
-        # Convert current cell to an urban slum.
+        # Remove the House agent at the current position
+        cell_contents = self.model.grid.get_cell_list_contents([self.pos])
+        house = next((agent for agent in cell_contents if isinstance(agent, House)), None)
+        if house:
+            self.model.schedule.remove(house)
+            self.model.grid.remove_agent(house)
+        
+        # Convert current cell to an urban slum
         slum = UrbanSlum(self.model, self.pos, self.model.next_id())
         self.model.grid.place_agent(slum, self.pos)
+
+        # Remove the current agent from the schedule
         self.model.schedule.remove(self)
 
 class UrbanSlum(mesa.Agent):

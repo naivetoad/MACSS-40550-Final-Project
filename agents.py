@@ -187,6 +187,7 @@ class Resident(mesa.Agent):
         # Convert current cell to an urban slum
         slum = UrbanSlum(self.model, self.pos, self.model.next_id())
         self.model.grid.place_agent(slum, self.pos)
+        self.model.slum_count += 1
 
         # Remove the current agent from the schedule
         self.model.schedule.remove(self)

@@ -14,6 +14,7 @@ class Gentrification(mesa.Model):
         self.immigrants_added = 0  # Counter for added immigrants
         self.income_variance = income_variance
         self.preference = preference  # Add preference as an attribute of the model
+        self.slum_count = 0 # Counter for urban slums
         self.datacollector = DataCollector(
             model_reporters={
                 "Average Income": lambda m: np.mean([a.income for a in m.schedule.agents if isinstance(a, Resident)]),
@@ -151,9 +152,8 @@ class Gentrification(mesa.Model):
         return avg_utility
     
     def count_urban_slums(self):
-        urban_slum_count = sum(1 for agent in self.schedule.agents if isinstance(agent, UrbanSlum))
-        print(f"Number of Urban Slums: {urban_slum_count}")
-        return urban_slum_count
+        print(f"Number of Urban Slums: {self.slum_count}")
+        return self.slum_count
 
 class CustomScheduler(mesa.time.BaseScheduler):
     """

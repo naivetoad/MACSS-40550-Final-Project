@@ -11,21 +11,20 @@ import pandas as pd
 # parameters you want to vary
 parameters = {"height": 20,
               "width": 20,
-              "density": np.linspace(0.2, 1, 5),
-              "immigrant_start": np.linspace(0, 200, 5),
-              "immigrant_count": np.linspace(0, 200, 5),
-              "income_variance": np.linspace(0, 1, 6),
-              "preference": np.linspace(0, 1, 6)} 
+              "density": np.linspace(0.2, 0.6, 3),
+              "immigrant_start": 100,
+              "immigrant_count": 100,
+              "income_variance": np.linspace(0, 1, 3),
+              "preference": np.linspace(0, 1, 3)} 
 
 # what to run and what to collect
 # iterations is how many runs per parameter value
 # max_steps is how long to run the model
 results = batch_run(Gentrification, 
                     parameters,
-                    iterations=50,  
-                    max_steps=400, 
-                    data_collection_period=50,
-                    number_processes= None) #how often do you want to pull the data
+                    iterations=20,  
+                    max_steps=300, 
+                    data_collection_period=50) #how often do you want to pull the data
 
 
 ## NOTE: to do data collection, you need to be sure your pathway is correct to save this!

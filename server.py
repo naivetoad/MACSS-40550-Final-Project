@@ -41,23 +41,21 @@ grid = CanvasGrid(
     canvas_height=400,
 )
 
-average_income_chart = ChartModule(
-    [{"Label": "Average Income", "Color": "Blue"}],
-    data_collector_name='datacollector'
-)
 
-urban_slums_chart = ChartModule(
-    [{"Label": "Urban Slums", "Color": "Black"}],
-    data_collector_name='datacollector'
-)
-
-unhappy_agents_chart = ChartModule(
-    [{"Label": "Unhappy Agents", "Color": "Red"}],
+number_agents_chart = ChartModule(
+    [{"Label": "Unhappy Residents", "Color": "cyan"},
+     {"Label": "Unhappy Immigrant", "Color": "red"},
+     {"Label": "Urban Slums", "Color": "Black"}],
     data_collector_name='datacollector'
 )
 
 average_utility_chart = ChartModule(
     [{"Label": "Average Utility", "Color": "Green"}],
+    data_collector_name='datacollector'
+)
+
+average_income_chart = ChartModule(
+    [{"Label": "Average Income", "Color": "Blue"}],
     data_collector_name='datacollector'
 )
 
@@ -75,7 +73,7 @@ model_params = {
 # Set up the server
 server = ModularServer(
     Gentrification,
-    [grid, unhappy_agents_chart],
+    [grid, number_agents_chart, average_income_chart, average_utility_chart],
     "Gentrification Model",
     model_params
 )

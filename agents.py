@@ -93,10 +93,10 @@ class Resident(mesa.Agent):
         in_group_influence = len(in_group_neighbors) / len(neighbors) if neighbors else 0
 
         # Adjust utility calculation to include in-group influence
-        if isinstance(self, Immigrant):
-            self.utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * in_group_influence) 
-        else:
-            self.utility = (self.model.preference * capped_quality)
+        #if isinstance(self, Immigrant):
+            #self.utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * in_group_influence) 
+        #else:
+        self.utility = (self.model.preference * capped_quality) + ((1 - self.model.preference) * in_group_influence) 
         print(f"Agent {self.unique_id} at {self.pos} has utility {self.utility}")
         self.update_happiness(self.utility)
 

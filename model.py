@@ -17,7 +17,7 @@ class Gentrification(mesa.Model):
         self.datacollector = DataCollector(
             model_reporters={
                 "Average Income": lambda m: np.mean([a.income for a in m.schedule.agents if isinstance(a, Resident)]),
-                "Urban Slums": lambda m: sum(1 for a in m.schedule.agents if isinstance(a, UrbanSlum)),
+                "Urban Slums": self.count_urban_slums,
                 "Unhappy Residents": self.get_unhappy_agents,
                 "Unhappy Immigrant": self.get_unhappy_immigrant,
                 "Average Utility": self.get_average_utility,
@@ -149,7 +149,11 @@ class Gentrification(mesa.Model):
         avg_utility = np.mean(utilities) if utilities else 0
         print(f"Average Utility: {avg_utility}")  # debug, del later
         return avg_utility
-
+    
+    def count_urban_slums(self):
+        urban_slum_count = sum(1 for agent in self.schedule.agents if isinstance(agent, UrbanSlum))
+        print(f"Number of Urban Slums: {urban_slum_count}")
+        return urban_slum_count
 
 class CustomScheduler(mesa.time.BaseScheduler):
     """

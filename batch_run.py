@@ -1,4 +1,4 @@
-from model import Schelling
+from model import Gentrification
 from mesa import batch_run
 import numpy as np
 import pandas as pd
@@ -9,24 +9,23 @@ import pandas as pd
 # Here you will have elements that you want to sweep, eg:
 # parameters that will remain constant
 # parameters you want to vary
-parameters = {"height": 70,
-              "width": 60,
-              "density": 0.35,
-              "minority_pc": np.linspace(0, 0.5, 6),
-              "preference": np.linspace(0, 1, 4)} 
+parameters = {"height": 20,
+              "width": 20,
+              "density": np.linspace(0.1, 1, 6),
+              "immigrant_start": np.linspace(1, 300, 6),
+              "immigrant_count": np.linspace(1, 200, 6),
+              "income_variance": np.linspace(0, 1, 6),
+              "preference": np.linspace(0, 1, 6)} 
 
 # what to run and what to collect
 # iterations is how many runs per parameter value
 # max_steps is how long to run the model
-results = batch_run(Schelling, 
+results = batch_run(Gentrification, 
                     parameters,
                     iterations=50,  
-                    max_steps=120, 
-                    data_collection_period = [30,60,90,120],
+                    max_steps=350, 
+                    data_collection_period=50,
                     number_processes= None) #how often do you want to pull the data
-
-
-
 
 
 ## NOTE: to do data collection, you need to be sure your pathway is correct to save this!

@@ -59,6 +59,11 @@ average_income_chart = ChartModule(
     data_collector_name='datacollector'
 )
 
+moran = ChartModule(
+    [{"Label": "Moran's I", "Color": "Orange"}],
+    data_collector_name='datacollector'
+)
+
 # Set up modifiable parameters 
 model_params = {
     "density": mesa.visualization.Slider("Agent Density", 0.6, 0.1, 1.0, 0.05),
@@ -73,7 +78,7 @@ model_params = {
 # Set up the server
 server = ModularServer(
     Gentrification,
-    [grid, number_agents_chart, average_income_chart, average_utility_chart],
+    [grid, number_agents_chart, average_income_chart, average_utility_chart, moran],
     "Gentrification Model",
     model_params
 )

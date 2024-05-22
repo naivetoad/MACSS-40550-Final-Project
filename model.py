@@ -20,7 +20,8 @@ class Gentrification(mesa.Model):
                 "Urban Slums": lambda m: sum(1 for a in m.schedule.agents if isinstance(a, UrbanSlum)),
                 "Unhappy Residents": self.get_unhappy_agents,
                 "Unhappy Immigrant": self.get_unhappy_immigrant,
-                "Average Utility": self.get_average_utility
+                "Average Utility": self.get_average_utility,
+                "Moran's I": self.calculate_morans_i
             }
         )
         
@@ -94,6 +95,44 @@ class Gentrification(mesa.Model):
 
             if not has_resident:
                 return (x, y)
+    
+    def calculate_morans_i(self):
+        # Create a matrix to store the presence of residents and immigrants
+        matrix = np.zeros((self.grid.height, self.grid.width), dtype=int)
+
+        # Populate the matrix
+        for cell in self.grid.coord_iter():
+            cell_content, (x, y) = cell
+            for agent in cell_content:
+                if isinstance(agent, Resident) and not isinstance(agent, Immigrant):
+                    matrix[y, x] = 1
+                elif isinstance(agent, Immigrant):
+                    matrix[y, x] = 2
+
+        # Calculate the weights matrix
+        weights = self.get_weights_matrix()
+
+        # Calculate Moran's I
+        n = matrix.size
+        mean = matrix.mean()
+        deviation = matrix - mean
+        squared_deviation = deviation ** 2
+        weights_sum = np.sum(weights)
+        numerator = np.sum(deviation * deviation.T * weights)
+        denominator = np.sum(squared_deviation) / n
+        morans_i = numerator / (denominator * weights_sum)
+
+        return morans_i
+
+    def get_weights_matrix(self):
+        weights = np.zeros((self.grid.height, self.grid.width))
+        for i in range(self.grid.height):
+            for j in range(self.grid.width):
+                neighbors = self.grid.get_neighbors((i, j), moore=True, include_center=False, radius=1)
+                num_neighbors = len(neighbors)
+                for neighbor in neighbors:
+                    weights[i, j] += 1 / num_neighbors
+        return weights
             
     def get_unhappy_agents(self):
         unhappy_count = sum(1 for agent in self.schedule.agents if isinstance(agent, Resident) and agent.is_unhappy)

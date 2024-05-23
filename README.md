@@ -7,8 +7,8 @@ For our final project, we explore the dynamics of gentrification in an urban env
 
 
 ## Return to the original model
-This model can be transferred to the original Schelling model by:
-1. Setting the `Preference(0:Homophily, 1:travel time)` to 0 to full weight to level of homophily and 0 weight to travel times.
+This model's Schelling Configuration can be achived by:
+1. Setting the `Preference` and `Income Variance` to 0. This represents the case for which residents and immigrants have identical income distributions and a utility function with maximum emphasis on the presence of in-group neighbors
 
 
 ## Files

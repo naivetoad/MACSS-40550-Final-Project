@@ -12,7 +12,7 @@ This model's Schelling Configuration can be achived by:
 
 
 ## Files
-'agents.py' Sets up the agents and their behavior for each timestep\
+`agents.py` Sets up the agents and their behavior for each timestep\
 `model.py` Sets up the model itself and calls on agents in each time step\
 `server.py` Sets up visualization of agents and adjustable variable control bar\
 `run.py` Launches and runs the model

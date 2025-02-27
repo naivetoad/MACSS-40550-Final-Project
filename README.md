@@ -47,4 +47,9 @@ To conduct a batch run:
 python batch_run.py
 ```
 
+## Contributors
+- [Ho, Gregory](https://github.com/GregoryHo88)
+- [Yan, Weiwu](https://github.com/naivetoad)
+- [Zhang, Jiaxuan](https://github.com/Twilight233333)
+
 

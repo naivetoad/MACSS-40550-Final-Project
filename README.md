@@ -1,30 +1,49 @@
-# MACSS 40550 Final Project
+# Agent-Based Model of Urban Gentrification
 
-## Summary
-Our model was inspired by [Schelling's segregation model](https://github.com/jmclip/MACSS-40550-ABM/tree/main/2_Schelling/mesa_schelling). Schelling's segregation model is a classic agent-based model that shows that even a slight preference for similar neighbors can lead to a higher degree of isolation than we intuitively expect. 
+## Project Overview
+This project implements an Agent-Based Model inspired by Schelling's 
+Segregation Model, extending its application to income-based residential 
+dynamics. The model simulates interactions and relocations of different 
+socioeconomic groups within a city to study the formation of segregated 
+neighborhoods and gentrification.
 
-For our final project, we explore the dynamics of gentrification in an urban environment by simulating how different socioeconomic groups interact and move within a city. Specifically, we are addressing the following questions: How do varying preferences and income levels influence the formation of segregated neighborhoods? Can immigrants, with different socio-economic attributes, integrate into these neighborhoods?
+## Model Description
+The simulation operates on a 20x20 grid representing a city where each cell 
+contains a static agent, which may be occupied by a dynamic agent.
 
+1. Static Agents: Houses and urban slums with varying locational quality based 
+on neighborhood income.
+2. Dynamic Agents: Residents and immigrants differ by income and happiness 
+threshold.
+3. Movement: Dynamic agents can attempt to relocate based on a utility function 
+balancing income level and homophily preferences.
 
-## Return to the original model
-This model's Schelling Configuration can be achived by:
-1. Setting the `Preference` and `Income Variance` to 0. This represents the case for which residents and immigrants have identical income distributions and a utility function with maximum emphasis on the presence of in-group neighbors.
+## File Structure
+| File | Description |
+|------|------------|
+| `agents.py` | Defines agent classes. |
+| `model.py` | Defines simulation logics. |
+| `server.py` | Defines a server for mdoel simulation. |
+| `run.py` | Starts a server. |
+| `batch_run.py` | Defines parameters for simulation analysis. |
+| `visualization.ipynb` | Visualizes simulation results. |
+| `batch_data.csv` | Simulation data from batch runs. |
+| `requirements.txt` | Required dependencies. |
 
+## How to Run
+To install dependencies:
+```sh
+pip install -r requirements.txt
+```
 
-## Files
-`agents.py` Sets up the agents and their behavior for each timestep\
-`model.py` Sets up the model itself and calls on agents in each time step\
-`server.py` Sets up visualization of agents and adjustable variable control bar\
-`run.py` Launches and runs the model
+To run interactive simulations:
+```sh
+python run.py
+```
 
-## How to run
-1. To install dependencies, use pip and the `requirements.txt` file in this directory
-   ```python
-   $ pip install -r requirements.txt
-3. To run the model interactively, run Python `run.py` in this directory
-   ```python
-   $ python run.py
+To conduct a batch run:
+```sh
+python batch_run.py
+```
 
-## Group members (Alphabetical order)
-Gregory Ho, Jiaxuan Zhang, Thomas Yan
 

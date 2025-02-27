@@ -21,14 +21,15 @@ balancing income level and homophily preferences.
 ## File Structure
 | File | Description |
 |------|------------|
-| `agents.py` | Defines agent classes. |
-| `model.py` | Defines simulation logics. |
-| `server.py` | Defines a server for mdoel simulation. |
-| `run.py` | Starts a server. |
-| `batch_run.py` | Defines parameters for simulation analysis. |
-| `visualization.ipynb` | Visualizes simulation results. |
-| `batch_data.csv` | Simulation data from batch runs. |
-| `requirements.txt` | Required dependencies. |
+| `README.md` | Provides an overview and instructions. |
+| `agents.py` | Defines agent behaviors. |
+| `batch_data.csv` | Data generated from a batch run. |
+| `batch_run.py` | Defines parameters for a batch run. |
+| `model.py` | Defines agent interactions. |
+| `requirements.txt` | Lists necessary dependencies. |
+| `run.py` | Runs a server for simulations. |
+| `server.py` | Defines interactivity of simulations. |
+| `visualization.ipynb` | Analyzes and visualizes batch runs. |
 
 ## How to Run
 To install dependencies:
